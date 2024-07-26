@@ -15,7 +15,6 @@ import (
 
 // GetChannelInfo returns the current chanels settings for the radio
 func (r *Radio) GetChannels() (channels []*pb.Channel, err error) {
-
 	info, err := r.GetRadioInfo()
 	if err != nil {
 		return nil, err
@@ -32,7 +31,6 @@ func (r *Radio) GetChannels() (channels []*pb.Channel, err error) {
 
 // GetChannelInfo returns the current chanels settings for the radio
 func (r *Radio) GetChannelInfo(index int) (channelSettings *pb.Channel, err error) {
-
 	info, err := r.GetChannels()
 	if err != nil {
 		return &pb.Channel{}, err
@@ -50,7 +48,6 @@ func (r *Radio) GetChannelInfo(index int) (channelSettings *pb.Channel, err erro
 // SetChannelURL sets the channel for the radio. The incoming channel should match the meshtastic URL format
 // of a URL ending with /#{base_64_encoded_radio_params}
 func (r *Radio) SetChannelURL(url string) error {
-
 	// Split and unmarshel incoming base64 encoded protobuf packet
 	split := strings.Split(url, "/#")
 	channel := split[len(split)-1]
@@ -117,7 +114,6 @@ func (r *Radio) SetChannelURL(url string) error {
 
 // AddChannel adds a new channel to the radio
 func (r *Radio) AddChannel(name string, cIndex int) error {
-
 	var role pb.Channel_Role
 	if cIndex == 0 {
 		role = pb.Channel_PRIMARY
@@ -159,12 +155,10 @@ func (r *Radio) AddChannel(name string, cIndex int) error {
 	}
 
 	return nil
-
 }
 
 // SetChannel sets a channel value
 func (r *Radio) SetChannel(chIndex int, key string, value string) error {
-
 	channel, err := r.GetChannelInfo(chIndex)
 	if err != nil {
 		return err
@@ -256,12 +250,10 @@ func (r *Radio) SetChannel(chIndex int, key string, value string) error {
 	}
 
 	return nil
-
 }
 
 // Delete a channel from the radio
 func (r *Radio) DeleteChannel(cIndex int) error {
-
 	channelInfo, err := r.GetChannelInfo(cIndex)
 	if err != nil {
 		return err
@@ -301,5 +293,4 @@ func (r *Radio) DeleteChannel(cIndex int) error {
 	}
 
 	return nil
-
 }

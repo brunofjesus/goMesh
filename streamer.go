@@ -15,7 +15,6 @@ type streamer struct {
 }
 
 func (s *streamer) Init(addr string) error {
-
 	ip := net.ParseIP(addr)
 
 	if ip != nil {
@@ -28,7 +27,7 @@ func (s *streamer) Init(addr string) error {
 		s.isTCP = true
 
 	} else {
-		//Configure the serial port
+		// Configure the serial port
 		options := serial.OpenOptions{
 			PortName:              addr,
 			BaudRate:              115200,
@@ -55,7 +54,6 @@ func (s *streamer) Init(addr string) error {
 }
 
 func (s *streamer) Write(p []byte) error {
-
 	if s.isTCP {
 		s.netPort.SetReadDeadline(time.Now().Add(1 * time.Second))
 		_, err := s.netPort.Write(p)
@@ -75,7 +73,6 @@ func (s *streamer) Write(p []byte) error {
 }
 
 func (s *streamer) Read(p []byte) error {
-
 	if s.isTCP {
 		s.netPort.SetReadDeadline(time.Now().Add(2 * time.Second))
 		_, err := s.netPort.Read(p)
@@ -90,7 +87,6 @@ func (s *streamer) Read(p []byte) error {
 	}
 
 	return nil
-
 }
 
 func (s *streamer) Close() {

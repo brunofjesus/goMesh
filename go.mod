@@ -1,6 +1,6 @@
 module github.com/lmatte7/gomesh
 
-go 1.16
+go 1.22.5
 
 require (
 	github.com/jacobsa/go-serial v0.0.0-20180131005756-15cf729a72d4

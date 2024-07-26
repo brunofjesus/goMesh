@@ -29,7 +29,6 @@ func convPSK(param string) (psk []byte, err error) {
 }
 
 func genPSK256() []byte {
-
 	token := make([]byte, 32)
 	rand.Seed(time.Now().UnixNano())
 	rand.Read(token)

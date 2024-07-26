@@ -235,8 +235,8 @@ func (r *Radio) SendDecodedMessage(portnum pb.PortNum, payload []byte, to int64,
 		return errors.New("message too large")
 	}
 
-	randomizer := rand.New(rand.NewSource(time.Now().UnixNano()))
-	packetID := randomizer.Intn(2386828-1) + 1
+	rand.Seed(time.Now().UnixNano())
+	packetID := rand.Intn(2386828-1) + 1
 
 	radioMessage := pb.ToRadio{
 		PayloadVariant: &pb.ToRadio_Packet{
@@ -265,11 +265,7 @@ func (r *Radio) SendMessage(radioMessage *pb.ToRadio) error {
 		return err
 	}
 
-	if err := r.sendPacket(out); err != nil {
-		return err
-	}
-
-	return nil
+	return r.sendPacket(out)
 }
 
 // SetRadioOwner sets the owner of the radio visible on the public mesh

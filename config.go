@@ -11,7 +11,6 @@ import (
 
 // GetRadioConfig returns a filtered list of raiod and module config settings
 func (r *Radio) GetRadioConfig() (configPackets []*pb.FromRadio_Config, modulePackets []*pb.FromRadio_ModuleConfig, err error) {
-
 	configResponses, err := r.GetRadioInfo()
 	if err != nil {
 		return
@@ -31,7 +30,6 @@ func (r *Radio) GetRadioConfig() (configPackets []*pb.FromRadio_Config, modulePa
 
 // SetRadioConfig allows an freeform setting of values in the RadioConfig_UserPreferences struct
 func (r *Radio) SetRadioConfig(key string, value string) error {
-
 	keyFound := false
 
 	configSettings, moduleSettings, err := r.GetRadioConfig()
@@ -43,7 +41,6 @@ func (r *Radio) SetRadioConfig(key string, value string) error {
 	// valid key was provided. I wish there was a better way to do this, since
 	// new config values need to be added manually, but for now this works
 	for _, config := range configSettings {
-
 		if deviceConfig := config.Config.GetDevice(); deviceConfig != nil {
 			if keyFound = reflectForKey(deviceConfig, key); keyFound {
 				err := setProtoValue(deviceConfig, key, value)
@@ -192,7 +189,6 @@ func (r *Radio) SetRadioConfig(key string, value string) error {
 				break
 			}
 		}
-
 	}
 
 	for _, module := range moduleSettings {
@@ -496,7 +492,6 @@ func (r *Radio) SetRadioConfig(key string, value string) error {
 }
 
 func reflectForKey(t interface{}, key string) (keyFound bool) {
-
 	keyFound = false
 	crValues := reflect.ValueOf(t)
 
