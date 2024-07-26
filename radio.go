@@ -12,14 +12,16 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
-const start1 = byte(0x94)
-const start2 = byte(0xc3)
-const headerLen = 4
-const maxToFromRadioSzie = 512
-const broadcastAddr = "^all"
-const localAddr = "^local"
-const defaultHopLimit = 3
-const broadcastNum = 0xffffffff
+const (
+	start1             = byte(0x94)
+	start2             = byte(0xc3)
+	headerLen          = 4
+	maxToFromRadioSzie = 512
+	broadcastAddr      = "^all"
+	localAddr          = "^local"
+	defaultHopLimit    = 3
+	broadcastNum       = 0xffffffff
+)
 
 // Radio holds the port and serial io.ReadWriteCloser struct to maintain one serial connection
 type Radio struct {
@@ -28,7 +30,6 @@ type Radio struct {
 
 // Init initializes the Serial connection for the radio
 func (r *Radio) Init(port string) error {
-
 	streamer := streamer{}
 	err := streamer.Init(port)
 	if err != nil {
@@ -41,7 +42,6 @@ func (r *Radio) Init(port string) error {
 
 // sendPacket takes a protbuf packet, construct the appropriate header and sends it to the radio
 func (r *Radio) sendPacket(protobufPacket []byte) (err error) {
-
 	packageLength := len(string(protobufPacket))
 
 	header := []byte{start1, start2, byte(packageLength>>8) & 0xff, byte(packageLength) & 0xff}
@@ -53,12 +53,10 @@ func (r *Radio) sendPacket(protobufPacket []byte) (err error) {
 	}
 
 	return
-
 }
 
 // ReadResponse reads any responses in the serial port, convert them to a FromRadio protobuf and return
 func (r *Radio) ReadResponse(timeout bool) (FromRadioPackets []*pb.FromRadio, err error) {
-
 	b := make([]byte, 1)
 
 	emptyByte := make([]byte, 0)
@@ -129,12 +127,10 @@ func (r *Radio) ReadResponse(timeout bool) (FromRadioPackets []*pb.FromRadio, er
 	}
 
 	return FromRadioPackets, nil
-
 }
 
 // createAdminPacket builds a admin message packet to send to the radio
 func (r *Radio) createAdminPacket(nodeNum uint32, payload []byte) (packetOut []byte, err error) {
-
 	radioMessage := pb.ToRadio{
 		PayloadVariant: &pb.ToRadio_Packet{
 			Packet: &pb.MeshPacket{
@@ -157,7 +153,6 @@ func (r *Radio) createAdminPacket(nodeNum uint32, payload []byte) (packetOut []b
 	}
 
 	return
-
 }
 
 // getNodeNum returns the current NodeNumber after querying the radio
@@ -214,11 +209,20 @@ func (r *Radio) GetRadioInfo() (radioResponses []*pb.FromRadio, err error) {
 	}
 
 	return
-
 }
 
 // SendTextMessage sends a free form text message to other radios
 func (r *Radio) SendTextMessage(message string, to int64, channel int64) error {
+	return r.SendDecodedMessage(pb.PortNum_TEXT_MESSAGE_APP, []byte(message), to, channel, true)
+}
+
+// SendIpTunnelMessage sends a IP_TUNNEL_APP message
+func (r *Radio) SendIpTunnelMessage(payload []byte, to int64, channel int64) error {
+	return r.SendDecodedMessage(pb.PortNum_IP_TUNNEL_APP, payload, to, channel, false)
+}
+
+// SendDecodedMessage sends a message with a decoded packet
+func (r *Radio) SendDecodedMessage(portnum pb.PortNum, payload []byte, to int64, channel int64, wantAck bool) error {
 	var address int64
 	if to == 0 {
 		address = broadcastNum
@@ -227,31 +231,36 @@ func (r *Radio) SendTextMessage(message string, to int64, channel int64) error {
 	}
 
 	// This constant is defined in Constants_DATA_PAYLOAD_LEN, but not in a friendly way to use
-	if len(message) > 240 {
+	if len(payload) > 240 {
 		return errors.New("message too large")
 	}
 
-	rand.Seed(time.Now().UnixNano())
-	packetID := rand.Intn(2386828-1) + 1
+	randomizer := rand.New(rand.NewSource(time.Now().UnixNano()))
+	packetID := randomizer.Intn(2386828-1) + 1
 
 	radioMessage := pb.ToRadio{
 		PayloadVariant: &pb.ToRadio_Packet{
 			Packet: &pb.MeshPacket{
 				To:      uint32(address),
-				WantAck: true,
+				WantAck: wantAck,
 				Id:      uint32(packetID),
 				Channel: uint32(channel),
 				PayloadVariant: &pb.MeshPacket_Decoded{
 					Decoded: &pb.Data{
-						Payload: []byte(message),
-						Portnum: pb.PortNum_TEXT_MESSAGE_APP,
+						Payload: payload,
+						Portnum: portnum,
 					},
 				},
 			},
 		},
 	}
 
-	out, err := proto.Marshal(&radioMessage)
+	return r.SendMessage(&radioMessage)
+}
+
+// SendMessage marshals and sends a ToRadio packet
+func (r *Radio) SendMessage(radioMessage *pb.ToRadio) error {
+	out, err := proto.Marshal(radioMessage)
 	if err != nil {
 		return err
 	}
@@ -261,12 +270,10 @@ func (r *Radio) SendTextMessage(message string, to int64, channel int64) error {
 	}
 
 	return nil
-
 }
 
 // SetRadioOwner sets the owner of the radio visible on the public mesh
 func (r *Radio) SetRadioOwner(name string) error {
-
 	if len(name) <= 2 {
 		return errors.New("name too short")
 	}
@@ -303,7 +310,6 @@ func (r *Radio) SetRadioOwner(name string) error {
 
 // SetModemMode sets the channel modem setting to be fast or slow
 func (r *Radio) SetModemMode(mode string) error {
-
 	var modemSetting pb.Config_LoRaConfig_ModemPreset
 
 	if mode == "lf" {
@@ -355,12 +361,10 @@ func (r *Radio) SetModemMode(mode string) error {
 	}
 
 	return nil
-
 }
 
 // SetLocation sets a fixed location for the radio
 func (r *Radio) SetLocation(lat float64, long float64, alt int32) error {
-
 	positionPacket := pb.Position{
 		LatitudeI:  int32(lat),
 		LongitudeI: int32(long),
