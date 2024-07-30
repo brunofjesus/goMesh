@@ -195,20 +195,16 @@ func (r *Radio) GetRadioInfo() (radioResponses []*pb.FromRadio, err error) {
 
 	r.sendPacket(out)
 
-	// FIXME: Radio suddenly became slower after 2.3.15, figure out a better mechanism than simply wait
-	time.Sleep(500 * time.Millisecond)
-
-	radioResponses, err = r.ReadResponse(true)
-	if err != nil {
-		return nil, err
-	}
-
-	// Try again if we don't get any responses
-	if len(radioResponses) == 0 {
-		radioResponses, err = r.ReadResponse(true)
-		if err != nil {
-			return nil, err
+	var responses []*pb.FromRadio
+	for i := 0; i < 10; i++ {
+		responses, err = r.ReadResponse(true)
+		radioResponses = append(radioResponses, responses...)
+		for _, response := range responses {
+			if configId, ok := response.GetPayloadVariant().(*pb.FromRadio_ConfigCompleteId); ok && configId.ConfigCompleteId == 42 {
+				return responses, err
+			}
 		}
+		time.Sleep(50 * time.Millisecond)
 	}
 
 	return
