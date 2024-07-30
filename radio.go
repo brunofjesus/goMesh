@@ -195,6 +195,9 @@ func (r *Radio) GetRadioInfo() (radioResponses []*pb.FromRadio, err error) {
 
 	r.sendPacket(out)
 
+	// FIXME: Radio suddenly became slower after 2.3.15, figure out a better mechanism than simply wait
+	time.Sleep(500 * time.Millisecond)
+
 	radioResponses, err = r.ReadResponse(true)
 	if err != nil {
 		return nil, err
